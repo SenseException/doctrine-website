@@ -6,12 +6,20 @@ namespace Doctrine\Website\Repositories;
 
 use Doctrine\SkeletonMapper\ObjectRepository\BasicObjectRepository;
 use Doctrine\Website\Model\Contributor;
+use UnexpectedValueException;
+use function sprintf;
 
 class ContributorRepository extends BasicObjectRepository
 {
     public function findOneByGithub(string $github) : Contributor
     {
-        return $this->findOneBy(['github' => $github]);
+        $contributor = $this->findOneBy(['github' => $github]);
+
+        if (! $contributor instanceof Contributor) {
+            throw new UnexpectedValueException(sprintf('Return type %s was expected.', Contributor::class));
+        }
+
+        return $contributor;
     }
 
     /**
