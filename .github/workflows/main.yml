@@ -1,0 +1,59 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+
+    runs-on: "ubuntu-18.04"
+
+    services:
+      mysql:
+          image: "mysql:5.7"
+          env:
+              MYSQL_DATABASE: "doctrine_website_test"
+              MYSQL_ROOT_PASSWORD: "VdtLtifRh4gt37T"
+          ports:
+              - "3306:3306"
+          options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
+    steps:
+    - uses: "actions/checkout@v2"
+
+#    - uses: "mirromutth/mysql-action@v1.1"
+#      with:
+##        mysql user: "runner"
+##        mysql password: "test"
+#        mysql root password: "VdtLtifRh4gt37T"
+
+    - name: "Cache Composer packages"
+      id: "composer-cache"
+      uses: "actions/cache@v2"
+      with:
+        path: "vendor"
+        key: "${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}"
+        restore-keys: |
+          ${{ runner.os }}-php-
+    - name: "Setup PHP Action"
+      uses: "shivammathur/setup-php@v2"
+      with:
+        php-version: "7.2"
+
+    - name: "Install dependencies"
+      if: "steps.composer-cache.outputs.cache-hit != 'true'"
+      run: "composer install --prefer-dist --no-progress --no-suggest"
+
+    - name: "MySQL test"
+      run: "mysql -h127.0.0.1 -P3306 -uroot -pVdtLtifRh4gt37T doctrine_website_test -e 'SHOW TABLES;'"
+
+    - name: "Build docs to check .doctrine-project.json files"
+      run: "bin/console --env=test sync-repositories && bin/console --env=test sync && bin/console --env=test clear-build-cache  && bin/console --env=test build-website-data && bin/console --env=test build-docs"

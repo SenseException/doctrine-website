@@ -529,7 +529,7 @@
                 <argument key="dbname">doctrine_website_%doctrine.website.env%</argument>
                 <argument key="user">%doctrine.website.mysql.user%</argument>
                 <argument key="password">%doctrine.website.mysql.password%</argument>
-                <argument key="host">localhost</argument>
+                <argument key="host">127.0.0.1</argument>
                 <argument key="driver">pdo_mysql</argument>
             </argument>
         </service>
